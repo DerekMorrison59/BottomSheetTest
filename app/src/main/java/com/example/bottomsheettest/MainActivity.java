@@ -8,12 +8,13 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
 import android.text.style.UnderlineSpan;
-import android.util.Log;
+import android.text.util.Linkify;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -23,57 +24,47 @@ import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
-// Background image Created by Freepik.com
-// <a href="https://www.freepik.com/free-photos-vectors/food">Food vector created by Freepik</a>
+    // Background image Created from Abstract Art Simpler Background Pattern
+    // https://androidhdwallpapers.com/abstract-art-simpler-background-pattern/
 
 public class MainActivity extends AppCompatActivity {
 
+    // Likely Design
+    //  * User selects a restaurant (possibly from a list of 'near me') or by entering a name
+    //  * the app uses the local database to get the restaurant data
+    //  * if not found then a query is sent to the server
+    //  * the results from the restaurant query are then parsed and stored in a local database
+    //  * set a limit (like the last 10 queries) and then delete the oldest before adding a new one
+    //  * the list of recents could be displayed
+    //  * a 'favorite' feature could be added to allow the user to tag a restaurant and keep it in the database
+    //  * a decision to locally store (or not) the photos associated with each restaurant would need to be made
+    //      it might be better to get the fresh images each time (if the restaurant updates them)
+    //      but images can be a lot of data to download - time and $$ for the user
+
+    // the 'location' string represents the JSON data for one restaurant returned from a server
+    private String location = "{\"formatted_address\" : \"718 17 Ave SW, Calgary, AB T2S 0B7\", \"formatted_phone_number\" : \"(403) 474-4414\", \"name\" : \"MARKET\", \"opening_hours\" : { \"weekday_text\" : [ \"Monday: 11:30 AM – 11:00 PM\", \"Tuesday: 11:30 AM – 11:00 PM\", \"Wednesday: 11:30 AM – 11:00 PM\", \"Thursday: 11:30 AM – 12:00 AM\", \"Friday: 11:30 AM – 12:00 AM\", \"Saturday: 11:30 AM – 12:00 AM\", \"Sunday: 11:30 AM – 11:00 PM\" ] }, \"photos\" : [ { \"photo_id\" : 1, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food1.jpg” }, { \"photo_id\" : 2, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food2.jpg” }, { \"photo_id\" : 3, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food3.jpg” }, { \"photo_id\" : 4, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food4.jpg” }, { \"photo_id\" : 5, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food5.jpg” }, ], \"rating\" : 4.1, \"website\" : \"http://marketcalgary.ca/\"}";
+
     private BottomSheetBehavior mBottomSheetBehavior;
     private FloatingActionButton mFloatingActionButton;
-    private TextView tvName;
-    private TextView tvAddress;
-    private TextView tvPhone;
-    private TextView tvURL;
-    private TextView tvRating;
-    private boolean dataLoaded = false;
 
-    private View bottomSheet;
-    private ArrayList<ImageView> ivArray;
+    // InstanceState keys
+    private static String BOTTOM_SHEET_STATE = "bottomSheetState";
+    private static String SELECTED_RESTAURANT = "selected";
 
-    @Override
-    public void onBackPressed() {
-        if (BottomSheetBehavior.STATE_HIDDEN != mBottomSheetBehavior.getState()) {
-            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        } else {
-            super.onBackPressed();
-        }
-
-    }
+    private RestaurantData selectedRestaurant = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bottomSheet = findViewById( R.id.bottom_sheet );
+        View bottomSheet = findViewById( R.id.bottom_sheet );
         mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        Button button1 = (Button) findViewById( R.id.button_1 );
+        Button rButton = findViewById( R.id.restaurantButton);
 
-        tvName = findViewById(R.id.tvName);
-        tvAddress = findViewById(R.id.tvAddress);
-        tvPhone = findViewById(R.id.tvPhone);
-        tvURL = findViewById(R.id.tvURL);
-        tvRating = findViewById(R.id.tvRating);
-
-        ivArray = new ArrayList<ImageView>();
-        ivArray.add((ImageView)findViewById(R.id.ivFood1));
-        ivArray.add((ImageView)findViewById(R.id.ivFood2));
-        ivArray.add((ImageView)findViewById(R.id.ivFood3));
-        ivArray.add((ImageView)findViewById(R.id.ivFood4));
-        ivArray.add((ImageView)findViewById(R.id.ivFood5));
-
+        // FAB is initially hidden and onClick hides the BottomSheet
         mFloatingActionButton = findViewById(R.id.fab);
-        mFloatingActionButton.setImageResource(R.drawable.arrow_down_bold_light);
         mFloatingActionButton.hide();
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,49 +73,101 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // make sure the BottomSheet is initially hidden from view
+        // make sure the BottomSheet can be hidden and set the peek height
         mBottomSheetBehavior.setHideable(true);
-        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        mBottomSheetBehavior.setPeekHeight(160);
+        mBottomSheetBehavior.setPeekHeight((int) getResources().getDimension(R.dimen.peek_height));
 
+        // when the device has been rotated - restore the BottomSheet State and the Restaurant Data
+        if (savedInstanceState != null) {
+
+            int state = savedInstanceState.getInt(BOTTOM_SHEET_STATE, BottomSheetBehavior.STATE_HIDDEN);
+            mBottomSheetBehavior.setState(state);
+
+            if (BottomSheetBehavior.STATE_COLLAPSED == state || BottomSheetBehavior.STATE_EXPANDED == state) {
+                ShowTheFAB();
+            }
+
+            selectedRestaurant = savedInstanceState.getParcelable(SELECTED_RESTAURANT);
+            if (null != selectedRestaurant) {
+                ShowRestaurantData(selectedRestaurant);
+            }
+        } else {
+            // the BottomSheet is initially hidden from view
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
+
+        // there are 2 bottomSheet actions that require some help
+        //  - the user slides the BottomSheet out of view at the bottom
+        //  - the user clicks the FAB
         mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+            public void onStateChanged(@NonNull View bSheet, int newState) {
 
-                // 1 = STATE_DRAGGING
-                // 2 = STATE_SETTLING
-                // 3 = STATE_EXPANDED
-                // 4 = STATE_COLLAPSED
-                // 5 = STATE_HIDDEN
-
-                // when the BottomSheet is hidden that means the FAB should be hidden
                 if (BottomSheetBehavior.STATE_HIDDEN == newState) {
+
+                    // when the BottomSheet becomes hidden then the FAB should be hidden manually
                     HideTheFAB();
 
-                    bottomSheet.scrollTo(0,0);
+                    // when the 'back' button is used to hide the bottomSheet the contents may have
+                    // been moved to any random position - like a photo at the top instead of the restaurant name
+                    // reset the BottomSheet scroll position to be consistent for next 'peek'
+                    bSheet.scrollTo(0,0);
                 }
             }
 
             @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+            public void onSlide(@NonNull View bSheet, float slideOffset) {
             }
         });
 
+        rButton.setOnClickListener(new View.OnClickListener()
+           {
+               @Override
+               public void onClick(View v) {
 
-        button1.setOnClickListener(new View.OnClickListener() {
-                                       @Override
-                                       public void onClick(View v) {
-                                           if (false == dataLoaded) {
-                                               ParseTheLocation();
-                                           }
-                                           mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                                           ShowTheFAB();
-                                           dataLoaded = true;
-                                       }
-                                   }
+                   // in a real app the user would have most likely selected a new restaurant
+                   // and that data would need to be loaded into 'selectedRestaurant'
+                   if (null == selectedRestaurant) {
+
+                       // get the data for the selected restaurant
+                       // in this case - convert the raw JSON into a RestaurantData object
+                       // in a real app the restaurant data would come from the database
+                       selectedRestaurant = new RestaurantData(location);
+
+                       ShowRestaurantData(selectedRestaurant);
+                   }
+
+                   // put the BottomSheet at the 'peek' height
+                   mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                   ShowTheFAB();
+               }
+           }
         );
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // save the bottomSheet display state
+        outState.putInt(BOTTOM_SHEET_STATE, mBottomSheetBehavior.getState());
+
+        // save the Restaurant selection
+        outState.putParcelable(SELECTED_RESTAURANT, selectedRestaurant);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // hide the BottomSheet (if visible) when the back button is pressed
+        if (BottomSheetBehavior.STATE_HIDDEN != mBottomSheetBehavior.getState()) {
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    // the FAB does not automatically hide / show when the BottomSheet disappears and appears
+    // these methods make sure it does
     private void ShowTheFAB() {
         CoordinatorLayout.LayoutParams p = new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.WRAP_CONTENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT);
         p.anchorGravity = Gravity.TOP | Gravity.END;
@@ -134,26 +177,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void HideTheFAB() {
+        // 2018-01-13
+        // problem - hiding the FAB looks strange because the FAB will jump to the top left corner
+        // before disappearing when 'hide' is called - very distracting visually
+        //
+        // workaround - set the LayoutParams height and width to 0 before hiding
         CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) mFloatingActionButton.getLayoutParams();
-        p.setAnchorId(View.NO_ID);
         p.height = 0;
         p.width = 0;
         mFloatingActionButton.setLayoutParams(p);
         mFloatingActionButton.hide();
     }
 
-    private void ParseTheLocation() {
+    private TextView tvAddress;
 
-        RestaurantData r = new RestaurantData(location);
+    // take the data for one restaurant (RestaurantData) and use it to populate the BottomSheet elements
+    private void ShowRestaurantData(RestaurantData restaurantData) {
+        TextView tvName;
+        TextView tvPhone;
+        TextView tvURL;
+        TextView tvRating;
+
+        if (null == restaurantData) {
+            return;
+        }
+
+        tvName = findViewById(R.id.tvName);
+        tvPhone = findViewById(R.id.tvPhone);
+        tvAddress = findViewById(R.id.tvAddress);
+        tvURL = findViewById(R.id.tvURL);
+        tvRating = findViewById(R.id.tvRating);
 
         // copy basic info to the display elements
-        tvName.setText(r.get_name());
+        tvName.setText(restaurantData.get_name());
+        tvName.setContentDescription(tvName.getContentDescription() + restaurantData.get_name());
 
+        // problem: the TextView 'automap' feature has trouble with address formatting
+        // workaround: show the link manually and use 'onClick' to send an Intent to Google maps
         // reference: https://stackoverflow.com/questions/2624649/autolink-for-map-not-working
-        SpannableString address = new SpannableString(r.get_address());
+        SpannableString address = new SpannableString(restaurantData.get_address());
         address.setSpan(new UnderlineSpan(), 0, address.length(), 0);
         tvAddress.setText(address);
         tvAddress.setTextColor(getResources().getColor(R.color.primaryColor));
+        tvAddress.setContentDescription(tvAddress.getContentDescription() + address.toString());
 
         tvAddress.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,46 +230,88 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        tvPhone.setText(r.get_phone());
-        tvURL.setText(r.get_website());
-        String ratingLabel = getResources().getString(R.string.rating_label);
+        tvPhone.setText(restaurantData.get_phone());
+        tvPhone.setContentDescription(tvPhone.getContentDescription() + restaurantData.get_phone());
 
-        tvRating.setText(ratingLabel + String.valueOf(r.get_rating()));
+        // create a link to the restaurant website without showing the URL because it might be long string
+        String website = getResources().getString(R.string.restaurant_website, restaurantData.get_website());
 
-        ArrayList<String> pUrls = r.get_photoUrls();
-        int[] photoIds = r.get_photoIds();
+        // set the text as html and make the link active
+        tvURL.setText(Html.fromHtml(website));
+        tvURL.setMovementMethod(LinkMovementMethod.getInstance());
+        tvURL.setContentDescription(tvURL.getContentDescription() + restaurantData.get_website());
 
-        // limit the number of photos to 5 max
-        int photoCount = 5;
-        int pUrlsCount = pUrls.size();
-        ImageView imageView;
+        // format the rating number
+        String ratingLabel = getResources().getString(R.string.rating_label, restaurantData.get_rating());
+        tvRating.setText(ratingLabel);
+        tvRating.setContentDescription(ratingLabel);
 
-        for (int i = 0; i < photoCount; i++) {
-            //String u = pUrls.get(i);
-            imageView = ivArray.get(i);
-            if (i >= pUrlsCount || photoIds[i] == -1) {
-                imageView.setVisibility(View.GONE);
-            } else {
-                imageView.setVisibility(View.VISIBLE);
-                Glide.with(MainActivity.this)
-                        .load(pUrls.get(i)).centerCrop()
-                        .error(R.drawable.error_image_not_loaded)
-                        .into(imageView);
+        ArrayList<String> pUrls = restaurantData.get_photoUrls();
+        int[] photoIds = restaurantData.get_photoIds();
+
+        if (null != pUrls) {
+
+            // limit the number of photos displayed to be the lesser of 'URLs sent from server' or photo_count
+            int photoCount = getResources().getInteger(R.integer.photo_count);
+            int pUrlsCount = pUrls.size();
+            if (pUrlsCount < photoCount) {
+                photoCount = pUrlsCount;
+            }
+
+            View linearImageLayout = findViewById(R.id.imageBlock);
+            LinearLayout.LayoutParams imageLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) getResources().getDimension(R.dimen.photo_height));
+            ImageView imageView;
+            String description;
+
+            for (int i = 0; i < photoCount; i++) {
+
+                // don't add any problematic image urls
+                if (photoIds[i] != RestaurantData.BAD_IMAGE_URL) {
+
+                    // create a new ImageView and add it to the vertical layout
+                    imageView = new ImageView(this);
+
+                    // provide content description like 'Photo Number 2'
+                    description = getResources().getString(R.string.photo_description, photoIds[i]);
+                    imageView.setContentDescription(description);
+
+                    imageView.setLayoutParams(imageLayoutParams);
+                    ((LinearLayout) linearImageLayout).addView(imageView);
+
+                    // centerCrop will make them look good by filling the available space
+                    Glide.with(MainActivity.this)
+                            .load(pUrls.get(i)).centerCrop()
+                            .error(R.drawable.error_image_not_loaded)
+                            .into(imageView);
+                }
             }
         }
 
-        // create display elements for each weekday hours info
-        View linearLayout = findViewById(R.id.days_and_hours);
-        LinearLayout.LayoutParams tvLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        tvLayoutParams.setMarginStart(8);
-        ArrayList<String> weekdayArray = r.get_weekdayHours();
-        for (int i = 0; i < weekdayArray.size(); i++){
-            TextView tvDay = new TextView(this);
-            tvDay.setText(weekdayArray.get(i));
-            tvDay.setLayoutParams(tvLayoutParams);
-            ((LinearLayout) linearLayout).addView(tvDay);
+        if (null != restaurantData.get_weekdayHours()) {
+            // create a TextView for each weekday hours string and add them to the 'days_and_hours'
+            // the order of the strings in the JSON is the order that they are displayed
+            View linearLayout = findViewById(R.id.days_and_hours);
+            LinearLayout.LayoutParams tvLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            String daysHours;
+
+            for (int i = 0; i < restaurantData.get_weekdayHours().size(); i++) {
+                TextView tvDay = new TextView(this);
+                daysHours = restaurantData.get_weekdayHours().get(i);
+                tvDay.setText(daysHours);
+
+                // use the same string to provide the content description
+                tvDay.setContentDescription(daysHours);
+
+                // make the target bigger for accessibility
+                tvDay.setPadding(
+                        (int) getResources().getDimension(R.dimen.weekday_hours_margin),
+                        (int) getResources().getDimension(R.dimen.weekday_hours_margin_top),
+                        (int) getResources().getDimension(R.dimen.weekday_hours_margin),
+                        (int) getResources().getDimension(R.dimen.weekday_hours_margin_bottom));
+                tvDay.setGravity(Gravity.CENTER_HORIZONTAL);
+                tvDay.setLayoutParams(tvLayoutParams);
+                ((LinearLayout) linearLayout).addView(tvDay);
+            }
         }
     }
-
-    private String location = "{\"formatted_address\" : \"718 17 Ave SW, Calgary, AB T2S 0B7\", \"formatted_phone_number\" : \"(403) 474-4414\", \"name\" : \"MARKET\", \"opening_hours\" : { \"weekday_text\" : [ \"Monday: 11:30 AM – 11:00 PM\", \"Tuesday: 11:30 AM – 11:00 PM\", \"Wednesday: 11:30 AM – 11:00 PM\", \"Thursday: 11:30 AM – 12:00 AM\", \"Friday: 11:30 AM – 12:00 AM\", \"Saturday: 11:30 AM – 12:00 AM\", \"Sunday: 11:30 AM – 11:00 PM\" ] }, \"photos\" : [ { \"photo_id\" : 1, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food1.jpg” }, { \"photo_id\" : 2, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food2.jpg” }, { \"photo_id\" : 3, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food3.jpg” }, { \"photo_id\" : 4, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food4.jpg” }, { \"photo_id\" : 5, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food5.jpg” }, ], \"rating\" : 4.1, \"website\" : \"http://marketcalgary.ca/\"}";
 }
