@@ -1,16 +1,19 @@
 package com.example.bottomsheettest;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 
 /**
  * Created by Derek on 1/14/2018.
  */
+
+
+// the following is an example of the kind of JSON that this class parses
 
 //{
 //      "formatted_address" : "718 17 Ave SW, Calgary, AB T2S 0B7",
@@ -53,8 +56,7 @@ import java.util.ArrayList;
 //      "website" : "http://marketcalgary.ca/"
 //}
 
-
-public class RestaurantData {
+public class RestaurantData implements Parcelable {
 
     // JSON Node names
     private static final String TAG_FORMATTED_ADDRESS = "formatted_address";
@@ -67,6 +69,10 @@ public class RestaurantData {
     private static final String TAG_WEEKDAY_TEXT = "weekday_text";
     private static final String TAG_RATING = "rating";
     private static final String TAG_WEBSITE = "website";
+
+    // a known image URL available on the web in case of a problem with the JSON
+    private static final String IMAGE_URL = "http://placehold.it/320x180&text=unavailable";
+    public static final int BAD_IMAGE_URL = -1;
 
     private String _address = "";
     private String _phone = "";
@@ -109,18 +115,13 @@ public class RestaurantData {
         return _photoIds;
     }
 
-    public RestaurantData(String rawData){
+    public RestaurantData(String rawData) {
 
         JSONObject jsonObject = null;
         JSONArray photosArray = null;
         JSONArray weekdayArray = null;
-        JSONObject photoObject;
 
-        String jsonInput = rawData;
-
-        // replace any bad opening and closing quotation marks with the standard character
-        jsonInput = jsonInput.replace("”","\"");
-        jsonInput = jsonInput.replace("“","\"");
+        String jsonInput = cleanRawJSON(rawData);
 
         // convert the rawData string into a JSON object
         try {
@@ -129,6 +130,7 @@ public class RestaurantData {
             Log.e("JSON Parser jsonInput", "Error parsing data " + e.toString());
         }
 
+        // get all the JSON nodes
         if (null != jsonObject) {
             try {
                 // get the easy top level items
@@ -147,34 +149,29 @@ public class RestaurantData {
                 weekdayArray = weekdaysObject.getJSONArray(TAG_WEEKDAY_TEXT);
 
             } catch (JSONException e) {
+                // consider expanding the reported details if there are problems with the source JSON
                 e.printStackTrace();
             }
         }
 
+        // each item in the photosArray contains a photo ID and a photo URL
         if (null != photosArray) {
+            JSONObject photoObject;
             _photoUrls = new ArrayList<>();
             _photoIds = new int[photosArray.length()];
 
             // get the photo IDs and URLs
             try {
                 for (int i = 0; i < photosArray.length(); i++) {
-                    // watch out for missing JSON array data
+
+                    // flag missing JSON array data
                     if (photosArray.isNull(i)) {
-                        _photoIds[i] = -1;
-                        _photoUrls.add("https://www.google.ca/favicon.ico");
+                        _photoIds[i] = BAD_IMAGE_URL;
+                        _photoUrls.add(IMAGE_URL);
                     } else {
                         photoObject = photosArray.getJSONObject(i);
                         _photoIds[i] = photoObject.getInt(TAG_PHOTO_ID);
                         _photoUrls.add(photoObject.getString(TAG_PHOTO_URL));
-
-/*
-                        if ( i != 2) {
-                            _photoUrls.add(photoObject.getString(TAG_PHOTO_URL));
-                        } else {
-                            _photoUrls.add("https://www.google.ca/favicon.icon");
-
-                        }
-*/
                     }
                 }
             } catch (JSONException e) {
@@ -182,11 +179,14 @@ public class RestaurantData {
             }
         }
 
+        // weekday array is a list of strings
         if (null != weekdayArray) {
             _weekdayHours = new ArrayList<>(weekdayArray.length());
             try {
                 for (int i = 0; i < weekdayArray.length(); i++) {
-                    _weekdayHours.add(weekdayArray.getString(i));
+                    if (!weekdayArray.isNull(i)) {
+                        _weekdayHours.add(weekdayArray.getString(i));
+                    }
                 }
             } catch (JSONException e) {
                 Log.e("JSON Parser weekdays ", "Error parsing data " + e.toString());
@@ -194,4 +194,55 @@ public class RestaurantData {
         }
     }
 
+    // it may be necessary to add more string cleanup steps to make sure the JSON is
+    // in good shape before parsing
+    private String cleanRawJSON(String jsonInput) {
+
+        // replace any bad opening and closing quotation marks with the standard character
+        jsonInput = jsonInput.replace("”", "\"");
+        jsonInput = jsonInput.replace("“", "\"");
+        return jsonInput;
+    }
+
+    // make this class 'Parcelable' so that it can be easily saved and restored when device is rotated
+    public static final Parcelable.Creator<RestaurantData> CREATOR = new Parcelable.Creator<RestaurantData>() {
+        public RestaurantData createFromParcel(Parcel source) {
+            return new RestaurantData(source);
+        }
+
+        @Override
+        public RestaurantData[] newArray(int size) {
+            return new RestaurantData[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    private RestaurantData(Parcel in) {
+        _address = in.readString();
+        _phone = in.readString();
+        _name = in.readString();
+        _rating = in.readDouble();
+        _website = in.readString();
+
+        in.readStringList(_weekdayHours);
+        in.readStringList(_photoUrls);
+        in.readIntArray(_photoIds);
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(_address);
+        dest.writeString(_phone);
+        dest.writeString(_name);
+        dest.writeDouble(_rating);
+        dest.writeString(_website);
+
+        dest.writeStringList(_weekdayHours);
+        dest.writeStringList(_photoUrls);
+        dest.writeIntArray(_photoIds);
+    }
 }
