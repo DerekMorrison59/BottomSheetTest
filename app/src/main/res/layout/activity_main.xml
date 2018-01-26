@@ -5,39 +5,31 @@
     android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_freepik_p962"
+    android:background="@drawable/backrepeat"
     android:fitsSystemWindows="true">
 
-
-    <android.support.v7.widget.AppCompatButton
-        android:id="@+id/button_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        android:background="@color/primaryDarkColor"
-        android:paddingEnd="8dp"
-        android:paddingStart="8dp"
-        android:text="Restaurant Near Me"
-        android:textColor="@color/primaryLightTextColor" />
-
-    <!--
-    <ScrollView
+<!--
+     Background image Created from Abstract Art Simpler Background Pattern
+     https://androidhdwallpapers.com/abstract-art-simpler-background-pattern/
+-->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:gravity="top|center"
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingTop="24dp">
-
-
-        </LinearLayout>
-
-    </ScrollView>
--->
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/restaurantButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/primaryDarkColor"
+            android:contentDescription="@string/cd_click_to_show_restaurant_details"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:text="@string/restaurant_near_me"
+            android:textColor="@color/primaryLightTextColor" />
+    </LinearLayout>
 
     <android.support.v4.widget.NestedScrollView
         android:id="@+id/bottom_sheet"
@@ -45,8 +37,11 @@
         android:layout_height="match_parent"
         android:background="@android:color/white"
         android:clipToPadding="true"
-        android:elevation="@dimen/cardview_default_elevation"
         app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
+        android:layout_marginLeft="@dimen/bottomsheet_margin_left"
+        android:layout_marginRight="@dimen/bottomsheet_margin_right"
+        android:layout_marginStart="@dimen/bottomsheet_margin_left"
+        android:layout_marginEnd="@dimen/bottomsheet_margin_right"
         tools:layout_editor_absoluteY="300dp">
 
         <android.support.constraint.ConstraintLayout
@@ -60,9 +55,10 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="8dp"
+                app:cardCornerRadius="@dimen/cardCornerRadius"
+                app:cardElevation="@dimen/cardElevation"
                 app:contentPadding="4dp"
+                app:layout_constraintBottom_toTopOf="@id/imagesCard"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -75,126 +71,126 @@
 
                     <TextView
                         android:id="@+id/tvName"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="4dp"
-                        android:text="Good Restaurant"
-                        android:textSize="16sp"
+                        android:contentDescription="@string/cd_restaurant_name"
+                        android:gravity="center_horizontal"
+                        android:paddingBottom="@dimen/info_margin_vertical"
+                        android:paddingTop="@dimen/info_margin_vertical"
+                        android:text="@string/ph_restaurant_name"
+                        android:textSize="@dimen/info_text_size"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvAddress"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="4dp"
-                        android:text="123 Main Street"
-                        android:textSize="16sp" />
+                        android:contentDescription="@string/cd_address"
+                        android:gravity="center_horizontal"
+                        android:paddingBottom="@dimen/info_margin_vertical"
+                        android:paddingTop="@dimen/info_margin_vertical"
+                        android:text="@string/ph_restaurant_address"
+                        android:textSize="@dimen/info_text_size" />
 
                     <TextView
                         android:id="@+id/tvPhone"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:autoLink="phone"
+                        android:contentDescription="@string/cd_phone_number"
+                        android:gravity="center_horizontal"
                         android:linksClickable="true"
-                        android:padding="4dp"
-                        android:text="(416) 123-4567"
-                        android:textSize="16sp" />
+                        android:paddingBottom="@dimen/info_margin_vertical"
+                        android:paddingTop="@dimen/info_margin_vertical"
+                        android:text="@string/ph_restaurant_phone_number"
+                        android:textSize="@dimen/info_text_size" />
 
                     <TextView
                         android:id="@+id/tvURL"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:autoLink="web"
+                        android:contentDescription="@string/cd_website"
+                        android:gravity="center_horizontal"
                         android:linksClickable="true"
-                        android:padding="4dp"
-                        android:text="http://www.google.ca"
-                        android:textSize="16sp" />
+                        android:paddingBottom="@dimen/info_margin_vertical"
+                        android:paddingTop="@dimen/info_margin_vertical"
+                        android:text="@string/ph_restaurant_website"
+                        android:textSize="@dimen/info_text_size" />
 
                     <TextView
                         android:id="@+id/tvRating"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="4dp"
-                        android:text="4.5"
-                        android:textSize="16sp" />
+                        android:contentDescription="@string/cd_rating"
+                        android:gravity="center_horizontal"
+                        android:paddingBottom="@dimen/info_margin_vertical"
+                        android:paddingTop="@dimen/info_margin_vertical"
+                        android:text="@string/ph_restaurant_rating"
+                        android:textSize="@dimen/info_text_size" />
                 </LinearLayout>
             </android.support.v7.widget.CardView>
 
-            <ImageView
-                android:id="@+id/ivFood1"
+            <android.support.v7.widget.CardView
+                android:id="@+id/imagesCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
-                android:adjustViewBounds="true"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                app:cardCornerRadius="@dimen/cardCornerRadius"
+                app:cardElevation="@dimen/cardElevation"
+                app:layout_constraintBottom_toTopOf="@id/hoursCard"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/infoCard"
-                app:srcCompat="@android:drawable/btn_star" />
+                app:layout_constraintTop_toBottomOf="@+id/infoCard">
 
-            <ImageView
-                android:id="@+id/ivFood2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivFood1"
-                app:srcCompat="@android:drawable/btn_star" />
+                <LinearLayout
+                    android:id="@+id/imageBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
 
-            <ImageView
-                android:id="@+id/ivFood3"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivFood2"
-                app:srcCompat="@android:drawable/btn_star" />
+                    <TextView
+                        android:id="@+id/tvImageTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:contentDescription="@string/cd_restaurant_images"
+                        android:padding="8dp"
+                        android:text="@string/image_title"
+                        android:textSize="@dimen/image_text_size"
+                        android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/ivFood4"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivFood3"
-                app:srcCompat="@android:drawable/btn_star" />
-
-            <ImageView
-                android:id="@+id/ivFood5"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivFood4"
-                app:srcCompat="@android:drawable/btn_star" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
 
             <android.support.v7.widget.CardView
                 android:id="@+id/hoursCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:paddingEnd="8dp"
                 android:paddingStart="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="8dp"
+                app:cardCornerRadius="@dimen/cardCornerRadius"
+                app:cardElevation="@dimen/cardElevation"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivFood5">
+                app:layout_constraintTop_toBottomOf="@+id/imagesCard">
 
                 <LinearLayout
                     android:id="@+id/days_and_hours"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
                     android:gravity="center"
                     android:orientation="vertical"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -204,9 +200,10 @@
                         android:id="@+id/tvHoursTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/cd_hours_of_operation"
                         android:padding="8dp"
-                        android:text="Hours of Operation"
-                        android:textSize="16sp"
+                        android:text="@string/hours_of_operation_title"
+                        android:textSize="@dimen/hours_text_size"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -218,9 +215,11 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="@string/cd_hide_restaurant_details"
         app:backgroundTint="@color/primaryDarkColor"
         app:elevation="8dp"
         app:layout_anchor="@id/bottom_sheet"
-        app:layout_anchorGravity="top|end" />
+        app:layout_anchorGravity="top|end"
+        app:srcCompat="@drawable/arrow_down_bold_light" />
 
 </android.support.design.widget.CoordinatorLayout>
