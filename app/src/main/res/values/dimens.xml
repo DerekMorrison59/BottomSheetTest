@@ -1,3 +1,17 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="weekday_hours_margin">8dp</dimen>
+    <dimen name="info_margin_vertical">12dp</dimen>
+    <dimen name="weekday_hours_margin_top">10dp</dimen>
+    <dimen name="weekday_hours_margin_bottom">10dp</dimen>
+    <dimen name="info_text_size">16sp</dimen>
+    <dimen name="image_text_size">16sp</dimen>
+    <dimen name="hours_text_size">16sp</dimen>
+    <dimen name="cardCornerRadius">8dp</dimen>
+    <dimen name="cardElevation">8dp</dimen>
+
+    <dimen name="peek_height">64dp</dimen>
+    <dimen name="photo_height">240dp</dimen>
+    <dimen name="bottomsheet_margin_left">0dp</dimen>
+    <dimen name="bottomsheet_margin_right">0dp</dimen>
 </resources>
