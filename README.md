@@ -24,7 +24,7 @@ The contract will require effort on a contract basis with some flexibility for c
 * How To Apply: Complete the requirements below to demonstrate some core competencies. Completed submissions can be info@3dotfive.com or pushed to a github repository along with resume and cover letter. Submissions without completed code sample will not be considered.
 
 
-**Proof of Skill - Android Design**
+## **Proof of Skill - Android Design**
 
 Interested applicants,
 
