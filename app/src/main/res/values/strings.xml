@@ -1,5 +1,35 @@
+
+<!DOCTYPE resources [
+    <!ENTITY restaurantButton "Restaurant Near Me">
+    <!ENTITY imageTitle "What\'s on the Menu?">
+    ]>
 <resources>
-    <string name="app_name">BottomSheetTest</string>
-    <string name="title_activity_main2">Main2Activity</string>
-    <string name="rating_label">Rating: </string>
+    <string name="app_name">Eat Now</string>
+
+    <!--place holders-->
+    <string name="ph_restaurant_rating">4.5</string>
+    <string name="ph_restaurant_website">http://www.google.ca</string>
+    <string name="ph_restaurant_phone_number">(416) 123 4567</string>
+    <string name="ph_restaurant_address">123 Main Street</string>
+    <string name="ph_restaurant_name">Good Restaurant</string>
+
+    <!--"<a href=\"" + selectedRestaurant.get_website() + "\">Website</a>"-->
+    <string name="restaurant_website">&lt;a href=&quot; %1$s &quot;&gt;Website&lt;/a&gt;</string>
+    <string name="rating_label">Rating: %1$.1f</string>
+    <string name="photo_description">Photo Number %1$d</string>
+
+    <string name="restaurant_near_me">&restaurantButton;</string>
+    <string name="image_title">&imageTitle;</string>
+    <string name="hours_of_operation_title">Hours of Operation</string>
+
+    <!--content description-->
+    <string name="cd_click_to_show_restaurant_details">&restaurantButton; Shown at the bottom of the screen</string>
+    <string name="cd_restaurant_name">Restaurant Name</string>
+    <string name="cd_address">Address</string>
+    <string name="cd_phone_number">Phone Number</string>
+    <string name="cd_website">Website</string>
+    <string name="cd_rating">Rating</string>
+    <string name="cd_restaurant_images">Restaurant Images &imageTitle;</string>
+    <string name="cd_hours_of_operation">Hours of Operation</string>
+    <string name="cd_hide_restaurant_details">Hide Restaurant Details</string>
 </resources>
