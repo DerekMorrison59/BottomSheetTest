@@ -23,10 +23,6 @@
                 android:name="com.example.bottomsheettest.GlideConfiguration"
                 android:value="GlideModule" />
         </activity>
-        <activity
-            android:name=".Main2Activity"
-            android:label="@string/title_activity_main2"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
