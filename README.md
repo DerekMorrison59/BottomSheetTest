@@ -1,7 +1,7 @@
 ### BottomSheetTest - Example code for 3DotFive
-
+<br/>
 <p align="center"> 
- <h1>ANDROID DEVELOPER WANTED</h1>
+<h1 align="center">ANDROID DEVELOPER WANTED</h1>
 </p>
 
 <p align="center">
