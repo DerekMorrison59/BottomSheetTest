@@ -29,18 +29,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Likely Design
-    //  * User selects a restaurant (possibly from a list of 'near me') or by entering a name
-    //  * the app uses the local database to get the restaurant data
-    //  * if not found then a query is sent to the server
-    //  * the results from the restaurant query are then parsed and stored in a local database
-    //  * set a limit (like the last 10 queries) and then delete the oldest before adding a new one
-    //  * the list of recents could be displayed
-    //  * a 'favorite' feature could be added to allow the user to tag a restaurant and keep it in the database
-    //  * a decision to locally store (or not) the photos associated with each restaurant would need to be made
-    //      it might be better to get the fresh images each time (if the restaurant updates them)
-    //      but images can be a lot of data to download - time and $$ for the user
-
     // the 'location' string represents the JSON data for one restaurant returned from a server
     private String location = "{\"formatted_address\" : \"718 17 Ave SW, Calgary, AB T2S 0B7\", \"formatted_phone_number\" : \"(403) 474-4414\", \"name\" : \"MARKET\", \"opening_hours\" : { \"weekday_text\" : [ \"Monday: 11:30 AM – 11:00 PM\", \"Tuesday: 11:30 AM – 11:00 PM\", \"Wednesday: 11:30 AM – 11:00 PM\", \"Thursday: 11:30 AM – 12:00 AM\", \"Friday: 11:30 AM – 12:00 AM\", \"Saturday: 11:30 AM – 12:00 AM\", \"Sunday: 11:30 AM – 11:00 PM\" ] }, \"photos\" : [ { \"photo_id\" : 1, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food1.jpg” }, { \"photo_id\" : 2, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food2.jpg” }, { \"photo_id\" : 3, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food3.jpg” }, { \"photo_id\" : 4, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food4.jpg” }, { \"photo_id\" : 5, \"photo_url\" : “https://www.cuiseek.com/wp-content/uploads/2017/11/food5.jpg” }, ], \"rating\" : 4.1, \"website\" : \"http://marketcalgary.ca/\"}";
 
@@ -192,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvAddress;
 
     // take the data for one restaurant (RestaurantData) and use it to populate the BottomSheet elements
+    // in a real app this would likely be using a cursor to populate the UI
     private void ShowRestaurantData(RestaurantData restaurantData) {
         TextView tvName;
         TextView tvPhone;
